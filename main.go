@@ -8,6 +8,6 @@ import (
 func main() {
 	fmt.Println("hello world")
 	fmt.Printf("Irc_foo() -> %s\n", irc.Irc_foo())
-	// just testing the highlighting
-	fmt.Println("foo again")
+	irc := &irc.Connection{}
+	irc.Connect("irc.freenode.net", 6667)
 }
