@@ -1,23 +1,23 @@
 package irc
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net"
 	"time"
-	"crypto/tls"
 )
 
 type Connection struct {
-	conn net.Conn
-	Host string
-	Port int
-	Tls bool
+	conn      net.Conn
+	Host      string
+	Port      int
+	Tls       bool
 	host_port string
 }
 
 func (c *Connection) Connect() error {
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
-	dialer := &net.Dialer{Timeout: time.Duration(5)*time.Second}
+	dialer := &net.Dialer{Timeout: time.Duration(5) * time.Second}
 	if c.Tls {
 		conn, err := tls.DialWithDialer(dialer, "tcp", c.host_port, &tls.Config{InsecureSkipVerify: true})
 		if err != nil {
