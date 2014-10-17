@@ -8,6 +8,6 @@ import (
 func main() {
 	fmt.Println("hello world")
 	fmt.Printf("Irc_foo() -> %s\n", irc.Irc_foo())
-	irc := &irc.Connection{}
-	irc.Connect("irc.freenode.net", 6667)
+	irc := &irc.Connection{Host: "irc.freenode.net", Port: 6667, Tls: false}
+	irc.Connect()
 }

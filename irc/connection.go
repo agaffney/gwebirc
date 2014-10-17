@@ -4,21 +4,35 @@ import (
 	"fmt"
 	"net"
 	"time"
+	"crypto/tls"
 )
 
 type Connection struct {
 	conn net.Conn
-	host string
-	port int
+	Host string
+	Port int
+	Tls bool
+	host_port string
 }
 
-func (c Connection) Connect(host string, port int) error {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", host, port), time.Duration(5)*time.Second)
-	if err != nil {
-		fmt.Printf("connection failed: %v", err)
-		return err
+func (c *Connection) Connect() error {
+	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
+	dialer := &net.Dialer{Timeout: time.Duration(5)*time.Second}
+	if c.Tls {
+		conn, err := tls.DialWithDialer(dialer, "tcp", c.host_port, &tls.Config{InsecureSkipVerify: true})
+		if err != nil {
+			fmt.Printf("connection failed: %s\n", err)
+			return err
+		}
+		c.conn = conn
+	} else {
+		conn, err := dialer.Dial("tcp", c.host_port)
+		if err != nil {
+			fmt.Printf("connection failed: %s\n", err)
+			return err
+		}
+		c.conn = conn
 	}
 	fmt.Println("connection successful!")
-	c.conn = conn
 	return nil
 }
