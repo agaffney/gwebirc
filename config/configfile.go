@@ -18,3 +18,15 @@ func (c *Config) Parse_config_file() error {
 	fmt.Println(c)
 	return nil
 }
+
+func (c *Config) Write_config_file() error {
+	content, err := json.Marshal(*c)
+	if err != nil {
+		return err
+	}
+	err = ioutil.WriteFile(c.config_file, content, 0600)
+	if err != nil {
+		return err
+	}
+	return nil
+}
