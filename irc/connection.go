@@ -41,3 +41,8 @@ func (c *Connection) Start() {
 	// This should block until the connection is closed
 	c.read_from_server()
 }
+
+func (c *Connection) Send(msg string) {
+	c.conn.Write([]byte(msg))
+	fmt.Printf("> %s", msg)
+}

@@ -12,7 +12,7 @@ type Command struct {
 }
 
 func (c *Connection) parse_command(input string) {
-	cmd := Command{}
+	cmd := &Command{}
 	input = strings.TrimRight(input, "\r\n")
 	pieces := strings.Split(input, " ")
 	if strings.HasPrefix(pieces[0], ":") {
@@ -34,5 +34,11 @@ func (c *Connection) parse_command(input string) {
 			cmd.args = append(cmd.args, arg)
 		}
 	}
-	fmt.Println(cmd)
+	c.process_command(cmd)
+}
+
+func (c *Connection) process_command(cmd *Command) {
+	if cmd.command == "PING" {
+		c.Send(fmt.Sprintf("PONG :%s\r\n", cmd.args[0]))
+	}
 }
