@@ -15,11 +15,6 @@ func main() {
 		fmt.Printf("failed to parse config file: %s\n", err)
 		os.Exit(1)
 	}
-	err = conf.Write_config_file()
-	if err != nil {
-		fmt.Printf("failed to write config file: %s\n", err)
-		os.Exit(1)
-	}
 	irc := &irc.Connection{Host: "irc.freenode.net", Port: 6667, Tls: false}
 	irc.Connect()
 }

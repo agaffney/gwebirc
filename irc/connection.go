@@ -1,6 +1,7 @@
 package irc
 
 import (
+	"bufio"
 	"crypto/tls"
 	"fmt"
 	"net"
@@ -13,6 +14,7 @@ type Connection struct {
 	Port      int
 	Tls       bool
 	host_port string
+	readbuf   *bufio.Reader
 }
 
 func (c *Connection) Connect() error {
@@ -34,5 +36,17 @@ func (c *Connection) Connect() error {
 		c.conn = conn
 	}
 	fmt.Println("connection successful!")
+	c.readbuf = bufio.NewReader(c.conn)
+	c.conn.Write([]byte("NICK Guest868734\r\n"))
+	c.conn.Write([]byte("USER guest868 0 * :Guest868734\r\n"))
+	for {
+		str, err := c.readbuf.ReadString('\n')
+		if len(str) > 0 {
+			fmt.Println(str)
+		}
+		if err != nil {
+			break
+		}
+	}
 	return nil
 }

@@ -2,7 +2,7 @@ package config
 
 import (
 	"fmt"
-	"os/user"
+	"github.com/agaffney/gwebirc/util"
 )
 
 type Config struct {
@@ -20,7 +20,6 @@ type Server struct {
 }
 
 func default_config_file() string {
-	usr, _ := user.Current()
-	default_config_file := fmt.Sprintf("%s/.gwebirc", usr.HomeDir)
+	default_config_file := fmt.Sprintf("%s/.gwebirc", util.Get_homedir())
 	return default_config_file
 }
