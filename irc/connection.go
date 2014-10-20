@@ -38,7 +38,6 @@ func (c *Connection) Start() {
 		}
 		c.conn = conn
 	}
-	fmt.Println("connection successful!")
 	c.readbuf = bufio.NewReader(c.conn)
 	c.Send(fmt.Sprintf("NICK %s\r\n", c.user.nick))
 	c.Send(fmt.Sprintf("USER %s %d * :%s\r\n", c.user.name, c.user.bitmask, c.user.real_name))
@@ -50,4 +49,17 @@ func (c *Connection) Start() {
 func (c *Connection) Send(msg string) {
 	c.conn.Write([]byte(msg))
 	fmt.Printf("> %s", msg)
+}
+
+func (c *Connection) read_from_server() {
+	for {
+		str, err := c.readbuf.ReadString('\n')
+		if len(str) > 0 {
+			c.parse_command(str)
+		}
+		if err != nil {
+			break
+		}
+	}
+
 }

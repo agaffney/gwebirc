@@ -17,6 +17,9 @@ var handlers = map[string]func(*Connection, *Command){
 func (c *Connection) handle_server_command(cmd *Command) {
 	if fn, ok := handlers[cmd.command]; ok {
 		fn(c, cmd)
+	} else {
+		// Just print the unhandled commands for now
+		fmt.Println(cmd)
 	}
 }
 
