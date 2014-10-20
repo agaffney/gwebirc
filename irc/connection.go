@@ -15,10 +15,14 @@ type Connection struct {
 	Tls       bool
 	host_port string
 	readbuf   *bufio.Reader
+	mode      string
+	channels  map[string]Channel
 }
 
 func (c *Connection) Start() {
+	// Initialize a few values
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
+	c.channels = make(map[string]Channel)
 	dialer := &net.Dialer{Timeout: time.Duration(5) * time.Second}
 	if c.Tls {
 		conn, err := tls.DialWithDialer(dialer, "tcp", c.host_port, &tls.Config{InsecureSkipVerify: true})

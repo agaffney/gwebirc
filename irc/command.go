@@ -1,7 +1,6 @@
 package irc
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -34,11 +33,5 @@ func (c *Connection) parse_command(input string) {
 			cmd.args = append(cmd.args, arg)
 		}
 	}
-	c.process_command(cmd)
-}
-
-func (c *Connection) process_command(cmd *Command) {
-	if cmd.command == "PING" {
-		c.Send(fmt.Sprintf("PONG :%s\r\n", cmd.args[0]))
-	}
+	c.handle_server_command(cmd)
 }
