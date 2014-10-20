@@ -12,7 +12,7 @@ type Command struct {
 
 func (c *Connection) parse_command(input string) {
 	cmd := &Command{}
-	input = strings.TrimRight(input, "\r\n")
+	input = strings.TrimRight(input, " \r\n")
 	pieces := strings.Split(input, " ")
 	if strings.HasPrefix(pieces[0], ":") {
 		// Command includes a source

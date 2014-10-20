@@ -15,14 +15,15 @@ type Connection struct {
 	Tls       bool
 	host_port string
 	readbuf   *bufio.Reader
-	mode      string
-	channels  map[string]Channel
+	user      User
+	channels  map[string]*Channel
 }
 
 func (c *Connection) Start() {
 	// Initialize a few values
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
-	c.channels = make(map[string]Channel)
+	c.channels = make(map[string]*Channel)
+	c.user = User{name: "gwebirc", nick: "gwebirc", bitmask: 0, real_name: "gwebirc client"}
 	dialer := &net.Dialer{Timeout: time.Duration(5) * time.Second}
 	if c.Tls {
 		conn, err := tls.DialWithDialer(dialer, "tcp", c.host_port, &tls.Config{InsecureSkipVerify: true})
@@ -39,9 +40,9 @@ func (c *Connection) Start() {
 	}
 	fmt.Println("connection successful!")
 	c.readbuf = bufio.NewReader(c.conn)
-	c.conn.Write([]byte("NICK gwebirc\r\n"))
-	c.conn.Write([]byte("USER gwebirc 0 * :gwebirc client\r\n"))
-	c.conn.Write([]byte("JOIN #gwebirc\r\n"))
+	c.Send(fmt.Sprintf("NICK %s\r\n", c.user.nick))
+	c.Send(fmt.Sprintf("USER %s %d * :%s\r\n", c.user.name, c.user.bitmask, c.user.real_name))
+	c.Send("JOIN #gwebirc\r\n")
 	// This should block until the connection is closed
 	c.read_from_server()
 }
