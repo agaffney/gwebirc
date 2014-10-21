@@ -10,6 +10,7 @@ var handlers = map[string]func(*Connection, *Command){
 	"PING": handle_ping,
 	"MODE": handle_mode,
 	"JOIN": handle_join,
+	"PART": handle_part,
 	"324":  handle_channel_info,
 	"329":  handle_channel_info,
 	"353":  handle_channel_info,
@@ -19,6 +20,7 @@ var handlers = map[string]func(*Connection, *Command){
 func (c *Connection) handle_server_command(cmd *Command) {
 	if fn, ok := handlers[cmd.command]; ok {
 		fn(c, cmd)
+		fmt.Println(cmd)
 	} else {
 		// Just print the unhandled commands for now
 		fmt.Println(cmd)
@@ -31,10 +33,28 @@ func handle_ping(c *Connection, cmd *Command) {
 }
 
 func handle_join(c *Connection, cmd *Command) {
-	// Create structure for newly joined channel
-	c.channels[cmd.args[0]] = &Channel{Name: cmd.args[0]}
-	// We want to know the current mode of the channel
-	c.Send(fmt.Sprintf("MODE :%s\r\n", cmd.args[0]))
+	if cmd.source_nick == c.Nick {
+		// Create structure for newly joined channel
+		c.channels[cmd.args[0]] = &Channel{Name: cmd.args[0], conn: c}
+		// We want to know the current mode of the channel
+		c.Send(fmt.Sprintf("MODE :%s\r\n", cmd.args[0]))
+	} else {
+		// Somebody has joined a channel that we're in
+		// Refresh the list of names
+		ch := c.channels[cmd.args[0]]
+		ch.Refresh_names()
+	}
+}
+
+func handle_part(c *Connection, cmd *Command) {
+	if cmd.source_nick != c.Nick {
+		// Somebody left a channel, so refresh the names
+		ch := c.channels[cmd.args[0]]
+		ch.Refresh_names()
+	} else {
+		// We left a channel
+		delete(c.channels, cmd.args[0])
+	}
 }
 
 func handle_channel_info(c *Connection, cmd *Command) {
@@ -67,7 +87,7 @@ func handle_mode(c *Connection, cmd *Command) {
 		ch := c.channels[cmd.args[0]]
 		if len(cmd.args) == 3 {
 			// Mode on user in channel
-
+			ch.Refresh_names()
 		} else if len(cmd.args) == 2 {
 			// Channel mode
 			ch.Set_mode(cmd.args[1])

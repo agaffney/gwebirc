@@ -13,6 +13,7 @@ type Connection struct {
 	Host      string
 	Port      int
 	Tls       bool
+	Nick      string
 	host_port string
 	readbuf   *bufio.Reader
 	user      User
@@ -39,9 +40,9 @@ func (c *Connection) Start() {
 		c.conn = conn
 	}
 	c.readbuf = bufio.NewReader(c.conn)
-	c.Send(fmt.Sprintf("NICK %s\r\n", c.user.nick))
+	c.ChangeNick(c.user.nick)
 	c.Send(fmt.Sprintf("USER %s %d * :%s\r\n", c.user.name, c.user.bitmask, c.user.real_name))
-	c.Send("JOIN #gwebirc\r\n")
+	c.Join("#gwebirc")
 	// This should block until the connection is closed
 	c.read_from_server()
 }
@@ -53,6 +54,11 @@ func (c *Connection) Send(msg string) {
 
 func (c *Connection) Join(channel string) {
 	c.Send(fmt.Sprintf("JOIN %s\r\n", channel))
+}
+
+func (c *Connection) ChangeNick(nick string) {
+	c.Send(fmt.Sprintf("NICK %s\r\n", nick))
+	c.Nick = nick
 }
 
 func (c *Connection) read_from_server() {

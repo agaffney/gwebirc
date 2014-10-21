@@ -5,9 +5,10 @@ import (
 )
 
 type Command struct {
-	source  string
-	command string
-	args    []string
+	source      string
+	source_nick string
+	command     string
+	args        []string
 }
 
 func parse_command(input string) *Command {
@@ -18,6 +19,10 @@ func parse_command(input string) *Command {
 		// Command includes a source
 		cmd.source = pieces[0][1:]
 		pieces = pieces[1:]
+		source_parts := strings.Split(cmd.source, "!")
+		if len(source_parts) > 1 {
+			cmd.source_nick = source_parts[0]
+		}
 	}
 	// Grab the command
 	cmd.command = pieces[0]
