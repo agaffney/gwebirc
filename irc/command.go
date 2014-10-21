@@ -10,7 +10,7 @@ type Command struct {
 	args    []string
 }
 
-func (c *Connection) parse_command(input string) {
+func parse_command(input string) *Command {
 	cmd := &Command{}
 	input = strings.TrimRight(input, " \r\n")
 	pieces := strings.Split(input, " ")
@@ -33,5 +33,5 @@ func (c *Connection) parse_command(input string) {
 			cmd.args = append(cmd.args, arg)
 		}
 	}
-	c.handle_server_command(cmd)
+	return cmd
 }

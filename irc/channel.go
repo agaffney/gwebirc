@@ -1,22 +1,15 @@
 package irc
 
-import (
-	"fmt"
-)
-
 type Channel struct {
-	name      string
-	mode      string
-	names     []string
+	Name      string
+	Timestamp uint64
+	Mode      string
+	Names     []string
 	new_names []string
 }
 
-func (c *Connection) Join(channel string) {
-	c.Send(fmt.Sprintf("JOIN %s\r\n", channel))
-}
-
 func (ch *Channel) Set_mode(mode string) {
-	ch.mode = merge_modes(ch.mode, mode)
+	ch.Mode = merge_modes(ch.Mode, mode)
 }
 
 func (ch *Channel) Add_names(names []string) {
@@ -25,6 +18,6 @@ func (ch *Channel) Add_names(names []string) {
 }
 
 func (ch *Channel) Finalize_names() {
-	ch.names = ch.new_names
+	ch.Names = ch.new_names
 	ch.new_names = make([]string, 5)
 }

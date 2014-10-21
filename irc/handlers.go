@@ -2,6 +2,7 @@ package irc
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -10,6 +11,7 @@ var handlers = map[string]func(*Connection, *Command){
 	"MODE": handle_mode,
 	"JOIN": handle_join,
 	"324":  handle_channel_info,
+	"329":  handle_channel_info,
 	"353":  handle_channel_info,
 	"366":  handle_channel_info,
 }
@@ -30,13 +32,22 @@ func handle_ping(c *Connection, cmd *Command) {
 
 func handle_join(c *Connection, cmd *Command) {
 	// Create structure for newly joined channel
-	c.channels[cmd.args[0]] = &Channel{name: cmd.args[0]}
+	c.channels[cmd.args[0]] = &Channel{Name: cmd.args[0]}
 	// We want to know the current mode of the channel
 	c.Send(fmt.Sprintf("MODE :%s\r\n", cmd.args[0]))
 }
 
 func handle_channel_info(c *Connection, cmd *Command) {
 	switch cmd.command {
+	case "324":
+		// Channel mode
+		ch := c.channels[cmd.args[1]]
+		ch.Set_mode(cmd.args[2])
+	case "329":
+		// Channel create time
+		// :hitchcock.freenode.net 329 gwebirc #gwebirc 1413696501
+		ch := c.channels[cmd.args[1]]
+		ch.Timestamp, _ = strconv.ParseUint(cmd.args[2], 10, 64)
 	case "353":
 		// Channel name list
 		// :asimov.freenode.net 353 gwebirc @ #gwebirc :gwebirc @agaffney
@@ -47,10 +58,6 @@ func handle_channel_info(c *Connection, cmd *Command) {
 		// :asimov.freenode.net 366 gwebirc #gwebirc :End of /NAMES list.
 		ch := c.channels[cmd.args[1]]
 		ch.Finalize_names()
-	case "324":
-		// Channel mode
-		ch := c.channels[cmd.args[1]]
-		ch.Set_mode(cmd.args[2])
 	}
 }
 

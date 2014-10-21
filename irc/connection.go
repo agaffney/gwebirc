@@ -51,15 +51,19 @@ func (c *Connection) Send(msg string) {
 	fmt.Printf("> %s", msg)
 }
 
+func (c *Connection) Join(channel string) {
+	c.Send(fmt.Sprintf("JOIN %s\r\n", channel))
+}
+
 func (c *Connection) read_from_server() {
 	for {
-		str, err := c.readbuf.ReadString('\n')
-		if len(str) > 0 {
-			c.parse_command(str)
+		line, err := c.readbuf.ReadString('\n')
+		if len(line) > 0 {
+			cmd := parse_command(line)
+			c.handle_server_command(cmd)
 		}
 		if err != nil {
 			break
 		}
 	}
-
 }
