@@ -17,8 +17,17 @@ func main() {
 	}
 	for _, server := range conf.Servers {
 		irc := &irc.Connection{Host: server.Host, Port: server.Port, Tls: server.Use_tls}
+		irc.Add_handler("366", handle_366)
 		go irc.Start()
 	}
 	// Block indefinitely
 	select {}
+}
+
+func handle_366(c *irc.Connection, cmd *irc.Command) {
+	channel := cmd.Args[1]
+	fmt.Printf("Names list for %s:\n", channel)
+	for _, name := range c.Channels[channel].Names {
+		fmt.Println(name)
+	}
 }

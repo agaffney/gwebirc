@@ -14,16 +14,17 @@ type Connection struct {
 	Port      int
 	Tls       bool
 	Nick      string
+	Channels  map[string]*Channel
 	host_port string
 	readbuf   *bufio.Reader
 	user      User
-	channels  map[string]*Channel
+	handlers  map[string][]HandlerFunc
 }
 
 func (c *Connection) Start() {
 	// Initialize a few values
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
-	c.channels = make(map[string]*Channel)
+	c.Channels = make(map[string]*Channel)
 	c.user = User{name: "gwebirc", nick: "gwebirc", bitmask: 0, real_name: "gwebirc client"}
 	dialer := &net.Dialer{Timeout: time.Duration(5) * time.Second}
 	if c.Tls {
