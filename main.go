@@ -17,6 +17,7 @@ func main() {
 	}
 	for _, server := range conf.Servers {
 		irc := &irc.Connection{Host: server.Host, Port: server.Port, Tls: server.Use_tls}
+		irc.Init()
 		irc.Add_handler("366", handle_366)
 		go irc.Start()
 	}
@@ -24,7 +25,7 @@ func main() {
 	select {}
 }
 
-func handle_366(c *irc.Connection, cmd *irc.Command) {
+func handle_366(c *irc.Connection, cmd *irc.Event) {
 	channel := cmd.Args[1]
 	fmt.Printf("Names list for %s:\n", channel)
 	for _, name := range c.Channels[channel].Names {

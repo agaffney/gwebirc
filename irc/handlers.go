@@ -6,51 +6,48 @@ import (
 	"strings"
 )
 
-type HandlerFunc func(*Connection, *Command)
+type HandlerFunc func(*Connection, *Event)
 
-var internal_handlers = map[string][]HandlerFunc{
-	"PING": {handle_ping},
-	"MODE": {handle_mode},
-	"JOIN": {handle_join},
-	"PART": {handle_part},
-	"324":  {handle_channel_info},
-	"329":  {handle_channel_info},
-	"353":  {handle_channel_info},
-	"366":  {handle_channel_info},
+func (c *Connection) setup_handlers() {
+	c.Add_handler("PING", func(c *Connection, e *Event) {
+		c.Send("PONG :" + e.Args[0])
+	})
+
+	c.Add_handler("JOIN", handle_join)
+
+	c.Add_handler("CTCP_VERSION", func(c *Connection, e *Event) {
+		c.CtcpResponse("VERSION", e.Source_nick, "none of your business")
+	})
+
+	c.Add_handler("MODE", handle_mode)
+
+	c.Add_handler("PART", handle_part)
+
+	for _, foo := range []string{"324", "329", "353", "366"} {
+		c.Add_handler(foo, handle_channel_info)
+	}
 }
 
-func (c *Connection) Add_handler(cmd string, fn HandlerFunc) {
+func (c *Connection) Add_handler(code string, fn HandlerFunc) {
 	if c.handlers == nil {
 		c.handlers = make(map[string][]HandlerFunc)
 	}
-	if _, ok := c.handlers[cmd]; !ok {
+	if _, ok := c.handlers[code]; !ok {
 		// Create empty array for key
-		c.handlers[cmd] = []HandlerFunc{}
+		c.handlers[code] = []HandlerFunc{}
 	}
-	c.handlers[cmd] = append(c.handlers[cmd], fn)
+	c.handlers[code] = append(c.handlers[code], fn)
 }
 
-func (c *Connection) handle_server_command(cmd *Command) {
-	fmt.Println(cmd)
-	// Call internal handler first
-	if handlers, ok := internal_handlers[cmd.Command]; ok {
+func (c *Connection) handle_event(e *Event) {
+	if handlers, ok := c.handlers[e.Code]; ok {
 		for _, fn := range handlers {
-			fn(c, cmd)
-		}
-	}
-	if handlers, ok := c.handlers[cmd.Command]; ok {
-		for _, fn := range handlers {
-			fn(c, cmd)
+			fn(c, e)
 		}
 	}
 }
 
-func handle_ping(c *Connection, cmd *Command) {
-	// The server prefers that we respond to the PING command
-	c.Send(fmt.Sprintf("PONG :%s\r\n", cmd.Args[0]))
-}
-
-func handle_join(c *Connection, cmd *Command) {
+func handle_join(c *Connection, cmd *Event) {
 	if cmd.Source_nick == c.Nick {
 		// Create structure for newly joined channel
 		c.Channels[cmd.Args[0]] = &Channel{Name: cmd.Args[0], conn: c}
@@ -64,7 +61,7 @@ func handle_join(c *Connection, cmd *Command) {
 	}
 }
 
-func handle_part(c *Connection, cmd *Command) {
+func handle_part(c *Connection, cmd *Event) {
 	if cmd.Source_nick != c.Nick {
 		// Somebody left a channel, so refresh the names
 		ch := c.Channels[cmd.Args[0]]
@@ -75,8 +72,8 @@ func handle_part(c *Connection, cmd *Command) {
 	}
 }
 
-func handle_channel_info(c *Connection, cmd *Command) {
-	switch cmd.Command {
+func handle_channel_info(c *Connection, cmd *Event) {
+	switch cmd.Code {
 	case "324":
 		// Channel mode
 		ch := c.Channels[cmd.Args[1]]
@@ -99,7 +96,7 @@ func handle_channel_info(c *Connection, cmd *Command) {
 	}
 }
 
-func handle_mode(c *Connection, cmd *Command) {
+func handle_mode(c *Connection, cmd *Event) {
 	if strings.HasPrefix(cmd.Args[0], "#") {
 		// Channel
 		ch := c.Channels[cmd.Args[0]]

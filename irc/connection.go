@@ -21,11 +21,15 @@ type Connection struct {
 	handlers  map[string][]HandlerFunc
 }
 
-func (c *Connection) Start() {
+func (c *Connection) Init() {
 	// Initialize a few values
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
 	c.Channels = make(map[string]*Channel)
 	c.user = User{name: "gwebirc", nick: "gwebirc", bitmask: 0, real_name: "gwebirc client"}
+	c.setup_handlers()
+}
+
+func (c *Connection) Start() {
 	dialer := &net.Dialer{Timeout: time.Duration(5) * time.Second}
 	if c.Tls {
 		conn, err := tls.DialWithDialer(dialer, "tcp", c.host_port, &tls.Config{InsecureSkipVerify: true})
@@ -49,25 +53,46 @@ func (c *Connection) Start() {
 }
 
 func (c *Connection) Send(msg string) {
+	msg += "\r\n"
 	c.conn.Write([]byte(msg))
 	fmt.Printf("> %s", msg)
 }
 
 func (c *Connection) Join(channel string) {
-	c.Send(fmt.Sprintf("JOIN %s\r\n", channel))
+	c.Send("JOIN " + channel)
 }
 
 func (c *Connection) ChangeNick(nick string) {
-	c.Send(fmt.Sprintf("NICK %s\r\n", nick))
+	c.Send("NICK " + nick)
 	c.Nick = nick
+}
+
+func (c *Connection) Privmsg(target string, msg string) {
+	c.Send(fmt.Sprintf("PRIVMSG %s :%s", target, msg))
+}
+
+func (c *Connection) Notice(target string, msg string) {
+	c.Send(fmt.Sprintf("NOTICE %s :%s", target, msg))
+}
+
+func (c *Connection) Ctcp(code string, target string, msg string) {
+	if msg != "" {
+		msg = " " + msg
+	}
+	c.Privmsg(target, fmt.Sprintf("\x01%s%s\x01", code, msg))
+}
+
+func (c *Connection) CtcpResponse(code string, target string, msg string) {
+	c.Notice(target, fmt.Sprintf("\x01%s %s\x01", code, msg))
 }
 
 func (c *Connection) read_from_server() {
 	for {
 		line, err := c.readbuf.ReadString('\n')
 		if len(line) > 0 {
-			cmd := parse_command(line)
-			c.handle_server_command(cmd)
+			e := &Event{Raw: line}
+			e.parse()
+			c.handle_event(e)
 		}
 		if err != nil {
 			break
