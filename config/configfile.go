@@ -18,7 +18,8 @@ func (c *Config) Parse_config_file() error {
 }
 
 func (c *Config) Write_config_file() error {
-	content, err := json.Marshal(*c)
+	// Indent using two spaces
+	content, err := json.MarshalIndent(*c, "", "  ")
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	config_file string
-	Servers     []Server
+	Servers     []Server `json:"servers"`
 }
 
 type Server struct {
