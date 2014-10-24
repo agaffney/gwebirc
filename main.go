@@ -15,6 +15,7 @@ func main() {
 		fmt.Printf("failed to parse config file: %s\n", err)
 		os.Exit(1)
 	}
+	//conf.Write_config_file()
 	for _, server := range conf.Servers {
 		irc := &irc.Connection{Host: server.Host, Port: server.Port, Tls: server.Use_tls}
 		irc.Init()

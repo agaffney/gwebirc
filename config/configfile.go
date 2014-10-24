@@ -5,7 +5,13 @@ import (
 	"io/ioutil"
 )
 
+func (c *Config) init() {
+	c.Servers = make([]IRCServer, 0)
+	c.Listeners = make([]WebListener, 0)
+}
+
 func (c *Config) Parse_config_file() error {
+	c.init()
 	content, err := ioutil.ReadFile(c.config_file)
 	if err != nil {
 		return err
