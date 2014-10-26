@@ -11,7 +11,7 @@ func (c *Config) init() {
 	c.Servers = make([]IRCServer, 0)
 	// Set some sane defaults for an empty config
 	c.config_file = fmt.Sprintf("%s/.gwebirc", util.Get_homedir())
-	c.Http.Api_port = 9002
+	c.Http.Port = 9002
 }
 
 func (c *Config) Parse_config_file() error {

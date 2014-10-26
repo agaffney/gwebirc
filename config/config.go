@@ -9,12 +9,12 @@ type Config struct {
 	config_file string
 	Servers     []IRCServer `json:"servers"`
 	Http        struct {
-		Tls        bool   `json:"tls"`
-		Cert       string `json:"cert,omitempty"`
-		Key        string `json:"key,omitempty"`
-		Cacert     string `json:"ca_cert,omitempty"`
-		Api_port   uint16 `json:"api_port"`
-		Webui_port uint16 `json:"webui_port,omitempty"`
+		Tls          bool   `json:"tls"`
+		Cert         string `json:"cert,omitempty"`
+		Key          string `json:"key,omitempty"`
+		Cacert       string `json:"ca_cert,omitempty"`
+		Port         uint16 `json:"port"`
+		Enable_webui bool   `json:"enable_webui"`
 	} `json:"http"`
 }
 
