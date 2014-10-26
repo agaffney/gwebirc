@@ -1,4 +1,4 @@
-package main
+package core
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 	"os"
 )
 
-func main() {
+func Start() {
 	conf := &config.Config{}
 	conf.Parse_command_line()
 	err := conf.Parse_config_file()
