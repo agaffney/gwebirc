@@ -7,8 +7,15 @@ import (
 
 type Config struct {
 	config_file string
-	Servers     []IRCServer   `json:"servers"`
-	Listeners   []WebListener `json:"listeners"`
+	Servers     []IRCServer `json:"servers"`
+	Http        struct {
+		Tls        bool   `json:"tls"`
+		Cert       string `json:"cert,omitempty"`
+		Key        string `json:"key,omitempty"`
+		Cacert     string `json:"ca_cert,omitempty"`
+		Api_port   uint16 `json:"api_port"`
+		Webui_port uint16 `json:"webui_port,omitempty"`
+	} `json:"http"`
 }
 
 type IRCServer struct {
@@ -18,14 +25,6 @@ type IRCServer struct {
 	Use_tls      bool   `json:"use_tls"`
 	Tls_Verify   bool   `json:"tls_verify"`
 	Auto_connect bool   `json:"auto_connect"`
-}
-
-type WebListener struct {
-	Port    int    `json:"port"`
-	Use_tls bool   `json:"use_tls"`
-	Cert    string `json:"cert"`
-	Key     string `json:"key"`
-	Cacert  string `json:"cacert"`
 }
 
 func default_config_file() string {

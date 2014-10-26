@@ -5,7 +5,9 @@ import (
 )
 
 func (c *Config) Parse_command_line() {
-	config_file := flag.String("config", default_config_file(), "config file")
+	config_file := flag.String("config", "", "config file, defaults to ~/.gwebirc")
 	flag.Parse()
-	c.config_file = *config_file
+	if *config_file != "" {
+		c.config_file = *config_file
+	}
 }
