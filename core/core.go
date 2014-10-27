@@ -41,7 +41,7 @@ func Start() {
 func handle_366(c *irc.Connection, cmd *irc.Event) {
 	channel := cmd.Args[1]
 	fmt.Printf("Names list for %s:\n", channel)
-	for _, name := range c.Channels[channel].Names {
+	for _, name := range c.Get_channel(channel).Names {
 		fmt.Println(name)
 	}
 }

@@ -50,13 +50,13 @@ func (c *Connection) handle_event(e *Event) {
 func handle_join(c *Connection, cmd *Event) {
 	if cmd.Source_nick == c.Nick {
 		// Create structure for newly joined channel
-		c.Channels[cmd.Args[0]] = &Channel{Name: cmd.Args[0], conn: c}
+		c.Channels = append(c.Channels, &Channel{Name: cmd.Args[0], conn: c})
 		// We want to know the current mode of the channel
 		c.Send(fmt.Sprintf("MODE :%s\r\n", cmd.Args[0]))
 	} else {
 		// Somebody has joined a channel that we're in
 		// Refresh the list of names
-		ch := c.Channels[cmd.Args[0]]
+		ch := c.Get_channel(cmd.Args[0])
 		ch.Refresh_names()
 	}
 }
@@ -64,11 +64,16 @@ func handle_join(c *Connection, cmd *Event) {
 func handle_part(c *Connection, cmd *Event) {
 	if cmd.Source_nick != c.Nick {
 		// Somebody left a channel, so refresh the names
-		ch := c.Channels[cmd.Args[0]]
+		ch := c.Get_channel(cmd.Args[0])
 		ch.Refresh_names()
 	} else {
 		// We left a channel
-		delete(c.Channels, cmd.Args[0])
+		for idx, ch := range c.Channels {
+			if ch.Name == cmd.Args[0] {
+				c.Channels = append(c.Channels[:idx], c.Channels[idx+1:]...)
+				break
+			}
+		}
 	}
 }
 
@@ -76,22 +81,22 @@ func handle_channel_info(c *Connection, cmd *Event) {
 	switch cmd.Code {
 	case "324":
 		// Channel mode
-		ch := c.Channels[cmd.Args[1]]
+		ch := c.Get_channel(cmd.Args[1])
 		ch.Set_mode(cmd.Args[2])
 	case "329":
 		// Channel create time
 		// :hitchcock.freenode.net 329 gwebirc #gwebirc 1413696501
-		ch := c.Channels[cmd.Args[1]]
+		ch := c.Get_channel(cmd.Args[1])
 		ch.Timestamp, _ = strconv.ParseUint(cmd.Args[2], 10, 64)
 	case "353":
 		// Channel name list
 		// :asimov.freenode.net 353 gwebirc @ #gwebirc :gwebirc @agaffney
-		ch := c.Channels[cmd.Args[2]]
+		ch := c.Get_channel(cmd.Args[2])
 		ch.Add_names(strings.Split(cmd.Args[3], " "))
 	case "366":
 		// End of channel name list
 		// :asimov.freenode.net 366 gwebirc #gwebirc :End of /NAMES list.
-		ch := c.Channels[cmd.Args[1]]
+		ch := c.Get_channel(cmd.Args[1])
 		ch.Finalize_names()
 	}
 }
@@ -99,7 +104,7 @@ func handle_channel_info(c *Connection, cmd *Event) {
 func handle_mode(c *Connection, cmd *Event) {
 	if strings.HasPrefix(cmd.Args[0], "#") {
 		// Channel
-		ch := c.Channels[cmd.Args[0]]
+		ch := c.Get_channel(cmd.Args[0])
 		if len(cmd.Args) == 3 {
 			// Mode on user in channel
 			ch.Refresh_names()

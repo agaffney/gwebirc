@@ -55,8 +55,10 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 			http.NotFound(w, r)
 		}
 		switch params[2] {
+		case "join":
+			conn.Join(params[3])
 		case "part":
-
+			conn.Get_channel(params[3]).Part()
 		case "send":
 
 		}

@@ -10,12 +10,12 @@ import (
 
 type Connection struct {
 	conn      net.Conn
-	Name      string              `json:"name"`
-	Host      string              `json:"host"`
-	Port      int                 `json:"port"`
-	Tls       bool                `json:"-"`
-	Nick      string              `json:"nick"`
-	Channels  map[string]*Channel `json:"channels"`
+	Name      string     `json:"name"`
+	Host      string     `json:"host"`
+	Port      int        `json:"port"`
+	Tls       bool       `json:"-"`
+	Nick      string     `json:"nick"`
+	Channels  []*Channel `json:"channels"`
 	host_port string
 	readbuf   *bufio.Reader
 	user      User
@@ -25,7 +25,7 @@ type Connection struct {
 func (c *Connection) Init() {
 	// Initialize a few values
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
-	c.Channels = make(map[string]*Channel)
+	c.Channels = make([]*Channel, 0)
 	c.user = User{name: "gwebirc", nick: "gwebirc", bitmask: 0, real_name: "gwebirc client"}
 	c.setup_handlers()
 }
@@ -55,6 +55,15 @@ func (c *Connection) Start() {
 	c.read_from_server()
 }
 
+func (c *Connection) Get_channel(channel string) *Channel {
+	for _, ch := range c.Channels {
+		if ch.Name == channel {
+			return ch
+		}
+	}
+	return nil
+}
+
 func (c *Connection) Send(msg string) {
 	msg += "\r\n"
 	c.conn.Write([]byte(msg))
@@ -62,7 +71,7 @@ func (c *Connection) Send(msg string) {
 }
 
 func (c *Connection) Join(channel string) {
-	c.Send("JOIN " + channel)
+	c.Send("JOIN :" + channel)
 }
 
 func (c *Connection) ChangeNick(nick string) {

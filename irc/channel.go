@@ -30,3 +30,7 @@ func (ch *Channel) Finalize_names() {
 	ch.Names = ch.new_names
 	ch.new_names = make([]string, 0)
 }
+
+func (ch *Channel) Part() {
+	ch.conn.Send("PART " + ch.Name)
+}
