@@ -32,5 +32,5 @@ func (ch *Channel) Finalize_names() {
 }
 
 func (ch *Channel) Part() {
-	ch.conn.Send("PART " + ch.Name)
+	ch.conn.Part(ch.Name)
 }

@@ -74,6 +74,10 @@ func (c *Connection) Join(channel string) {
 	c.Send("JOIN :" + channel)
 }
 
+func (c *Connection) Part(channel string) {
+	c.Send("PART " + channel)
+}
+
 func (c *Connection) ChangeNick(nick string) {
 	c.Send("NICK " + nick)
 	c.Nick = nick

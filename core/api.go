@@ -40,6 +40,7 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 		}
 		if !found_conn {
 			http.NotFound(w, r)
+			return
 		}
 	case 3:
 		fallthrough
@@ -53,16 +54,25 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 		}
 		if conn == nil {
 			http.NotFound(w, r)
+			return
 		}
 		switch params[2] {
 		case "join":
 			conn.Join(params[3])
 		case "part":
-			conn.Get_channel(params[3]).Part()
-		case "send":
-
+			conn.Part(params[3])
+		case "privmsg":
+			target := params[3]
+			msg := r.PostFormValue("msg")
+			conn.Privmsg(target, msg)
+		default:
+			http.Error(w, "No such method '"+params[2]+"' for connection", 400)
+			return
 		}
 	default:
 		http.NotFound(w, r)
+		return
 	}
+	// Send explicit 200 if we end up here
+	w.WriteHeader(http.StatusOK)
 }
