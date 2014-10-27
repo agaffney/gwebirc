@@ -8,7 +8,7 @@ import (
 )
 
 func (c *Config) init() {
-	c.Servers = make([]IRCServer, 0)
+	c.Connections = make([]IRCConnection, 0)
 	// Set some sane defaults for an empty config
 	c.config_file = fmt.Sprintf("%s/.gwebirc", util.Get_homedir())
 	c.Http.Port = 9002

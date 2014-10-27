@@ -7,7 +7,7 @@ import (
 
 type Config struct {
 	config_file string
-	Servers     []IRCServer `json:"servers"`
+	Connections []IRCConnection `json:"connections"`
 	Http        struct {
 		Tls          bool   `json:"tls"`
 		Cert         string `json:"cert,omitempty"`
@@ -18,11 +18,11 @@ type Config struct {
 	} `json:"http"`
 }
 
-type IRCServer struct {
+type IRCConnection struct {
 	Name         string `json:"name"`
 	Host         string `json:"host"`
 	Port         int    `json:"port"`
-	Use_tls      bool   `json:"use_tls"`
+	Tls          bool   `json:"tls"`
 	Tls_Verify   bool   `json:"tls_verify"`
 	Auto_connect bool   `json:"auto_connect"`
 }

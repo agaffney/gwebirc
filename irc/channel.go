@@ -5,10 +5,10 @@ import (
 )
 
 type Channel struct {
-	Name      string
-	Timestamp uint64
-	Mode      string
-	Names     []string
+	Name      string   `json:"name"`
+	Timestamp uint64   `json:"timestamp"`
+	Mode      string   `json:"mode"`
+	Names     []string `json:"names"`
 	conn      *Connection
 	new_names []string
 }
@@ -28,5 +28,5 @@ func (ch *Channel) Add_names(names []string) {
 
 func (ch *Channel) Finalize_names() {
 	ch.Names = ch.new_names
-	ch.new_names = make([]string, 5)
+	ch.new_names = make([]string, 0)
 }

@@ -10,11 +10,12 @@ import (
 
 type Connection struct {
 	conn      net.Conn
-	Host      string
-	Port      int
-	Tls       bool
-	Nick      string
-	Channels  map[string]*Channel
+	Name      string              `json:"name"`
+	Host      string              `json:"host"`
+	Port      int                 `json:"port"`
+	Tls       bool                `json:"-"`
+	Nick      string              `json:"nick"`
+	Channels  map[string]*Channel `json:"channels"`
 	host_port string
 	readbuf   *bufio.Reader
 	user      User
@@ -35,12 +36,14 @@ func (c *Connection) Start() {
 		conn, err := tls.DialWithDialer(dialer, "tcp", c.host_port, &tls.Config{InsecureSkipVerify: true})
 		if err != nil {
 			fmt.Printf("connection failed: %s\n", err)
+			// TODO figure out how to return an error here
 		}
 		c.conn = conn
 	} else {
 		conn, err := dialer.Dial("tcp", c.host_port)
 		if err != nil {
 			fmt.Printf("connection failed: %s\n", err)
+			// TODO figure out how to return an error here
 		}
 		c.conn = conn
 	}

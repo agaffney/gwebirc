@@ -9,7 +9,7 @@ import (
 )
 
 var conf *config.Config
-var conn []*irc.Connection
+var irc_conns = []*irc.Connection{}
 
 func Start() {
 	conf = &config.Config{}
@@ -27,10 +27,9 @@ func Start() {
 	http.HandleFunc("/api/", api_handler)
 	go http.ListenAndServe(fmt.Sprintf(":%d", conf.Http.Port), nil)
 	// Start our IRC connections
-	conn = make([]*irc.Connection, 1)
-	for _, server := range conf.Servers {
-		irc := &irc.Connection{Host: server.Host, Port: server.Port, Tls: server.Use_tls}
-		conn = append(conn, irc)
+	for _, conn := range conf.Connections {
+		irc := &irc.Connection{Name: conn.Name, Host: conn.Host, Port: conn.Port, Tls: conn.Tls}
+		irc_conns = append(irc_conns, irc)
 		irc.Init()
 		irc.Add_handler("366", handle_366)
 		go irc.Start()
