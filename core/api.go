@@ -73,6 +73,4 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 		http.NotFound(w, r)
 		return
 	}
-	// Send explicit 200 if we end up here
-	w.WriteHeader(http.StatusOK)
 }
