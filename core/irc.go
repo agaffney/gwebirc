@@ -1,15 +1,24 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/agaffney/gwebirc/irc"
 )
+
+type IrcConnection struct {
+	_conn *irc.Connection
+}
+
+func (c *IrcConnection) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c._conn)
+}
 
 func irc_start() {
 	// Start the configured IRC connections
 	for _, conn := range conf.Connections {
 		irc := &irc.Connection{Name: conn.Name, Host: conn.Host, Port: conn.Port, Tls: conn.Tls}
-		irc_conns = append(irc_conns, irc)
+		irc_conns = append(irc_conns, &IrcConnection{_conn: irc})
 		irc.Init()
 		// Add our handlers
 		irc.Add_handler("PRIVMSG", handle_msg)

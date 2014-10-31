@@ -3,13 +3,12 @@ package core
 import (
 	"fmt"
 	"github.com/agaffney/gwebirc/config"
-	"github.com/agaffney/gwebirc/irc"
 	"net/http"
 	"os"
 )
 
 var conf *config.Config
-var irc_conns = []*irc.Connection{}
+var irc_conns = []*IrcConnection{}
 
 func Start() {
 	conf = &config.Config{}

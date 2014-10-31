@@ -2,7 +2,6 @@ package core
 
 import (
 	"encoding/json"
-	"github.com/agaffney/gwebirc/irc"
 	"net/http"
 	"strings"
 )
@@ -32,7 +31,7 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 		// List specific connection by name
 		found_conn := false
 		for _, conn := range irc_conns {
-			if params[1] == conn.Name {
+			if params[1] == conn._conn.Name {
 				j.Encode(conn)
 				found_conn = true
 				break
@@ -45,9 +44,9 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 	case 3:
 		fallthrough
 	case 4:
-		var conn *irc.Connection
+		var conn *IrcConnection
 		for _, c := range irc_conns {
-			if params[1] == c.Name {
+			if params[1] == c._conn.Name {
 				conn = c
 				break
 			}
@@ -58,13 +57,13 @@ func handle_connections(w http.ResponseWriter, r *http.Request, params []string)
 		}
 		switch params[2] {
 		case "join":
-			conn.Join(params[3])
+			conn._conn.Join(params[3])
 		case "part":
-			conn.Part(params[3])
+			conn._conn.Part(params[3])
 		case "privmsg":
 			target := params[3]
 			msg := r.PostFormValue("msg")
-			conn.Privmsg(target, msg)
+			conn._conn.Privmsg(target, msg)
 		default:
 			http.Error(w, "No such method '"+params[2]+"' for connection", 400)
 			return
