@@ -11,44 +11,42 @@ type Event struct {
 	Source_nick string
 	Code        string
 	Args        []string
+	Msg         string
 }
 
 func (e *Event) parse() {
-	e.Raw = strings.TrimRight(e.Raw, " \r\n")
-	pieces := strings.Split(e.Raw, " ")
-	if strings.HasPrefix(pieces[0], ":") {
-		// Event includes a source
-		e.Source = pieces[0][1:]
-		pieces = pieces[1:]
-		source_parts := strings.Split(e.Source, "!")
+	line := strings.TrimRight(e.Raw, " \r\n")
+	// The event includes a source if it begins with a colon
+	if line[0] == ':' {
+		idx := strings.Index(line, " ")
+		e.Source = line[1:idx]
+		line = line[idx+1:]
+		source_parts := strings.SplitN(e.Source, "!", 2)
 		if len(source_parts) > 1 {
 			e.Source_nick = source_parts[0]
 		}
 	}
-	// Grab the command
-	e.Code = pieces[0]
-	pieces = pieces[1:]
-	// Grab the rest of the args
-	for idx, arg := range pieces {
-		if strings.HasPrefix(arg, ":") {
-			// Strip off leading colon
-			pieces[idx] = pieces[idx][1:]
-			e.Args = append(e.Args, strings.Join(pieces[idx:], " "))
-			break
-		} else {
-			e.Args = append(e.Args, arg)
-		}
+	// Check for a message at the end prefixed with a colon
+	idx := strings.Index(line, ":")
+	if idx >= 0 {
+		e.Msg = line[idx+1:]
+		// Remove from the space (we assume) before the colon to the end of the string
+		line = line[0 : idx-1]
 	}
+	// Split the remainder on space
+	pieces := strings.Split(line, " ")
+	// Grab the event code
+	e.Code = pieces[0]
+	// Everything else goes to args
+	e.Args = pieces[1:]
 	// Do extra parsing for CTCP
-	if e.Code == "PRIVMSG" && e.Args[1][0] == '\x01' {
+	if e.Code == "PRIVMSG" && e.Msg[0] == '\x01' {
 		// Strip off surrounding \x01 from message
-		e.Args[1] = e.Args[1][1 : len(e.Args[1])-1]
-		ctcp_args := strings.SplitN(e.Args[1], " ", 2)
+		e.Msg = e.Msg[1 : len(e.Msg)-1]
+		ctcp_args := strings.SplitN(e.Msg, " ", 2)
 		e.Code = fmt.Sprintf("CTCP_%s", ctcp_args[0])
 		if len(ctcp_args) > 1 {
-			e.Args[1] = ctcp_args[1]
-		} else {
-			e.Args = e.Args[0:1]
+			e.Msg = ctcp_args[1]
 		}
 	}
 }

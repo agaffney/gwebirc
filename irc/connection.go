@@ -25,7 +25,8 @@ type Connection struct {
 func (c *Connection) Init() {
 	// Initialize a few values
 	c.host_port = fmt.Sprintf("%s:%d", c.Host, c.Port)
-	c.Channels = make([]*Channel, 0)
+	c.Channels = make([]*Channel, 1)
+	c.Channels[0] = &Channel{Name: "(status)", conn: c}
 	c.user = User{name: "gwebirc", nick: "gwebirc", bitmask: 0, real_name: "gwebirc client"}
 	c.setup_handlers()
 }

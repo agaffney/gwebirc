@@ -27,21 +27,7 @@ func Start() {
 	http.HandleFunc("/api/", api_handler)
 	go http.ListenAndServe(fmt.Sprintf(":%d", conf.Http.Port), nil)
 	// Start our IRC connections
-	for _, conn := range conf.Connections {
-		irc := &irc.Connection{Name: conn.Name, Host: conn.Host, Port: conn.Port, Tls: conn.Tls}
-		irc_conns = append(irc_conns, irc)
-		irc.Init()
-		irc.Add_handler("366", handle_366)
-		go irc.Start()
-	}
+	irc_start()
 	// Block indefinitely
 	select {}
-}
-
-func handle_366(c *irc.Connection, cmd *irc.Event) {
-	channel := cmd.Args[1]
-	fmt.Printf("Names list for %s:\n", channel)
-	for _, name := range c.Get_channel(channel).Names {
-		fmt.Println(name)
-	}
 }

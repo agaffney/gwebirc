@@ -92,7 +92,7 @@ func handle_channel_info(c *Connection, cmd *Event) {
 		// Channel name list
 		// :asimov.freenode.net 353 gwebirc @ #gwebirc :gwebirc @agaffney
 		ch := c.Get_channel(cmd.Args[2])
-		ch.Add_names(strings.Split(cmd.Args[3], " "))
+		ch.Add_names(strings.Split(cmd.Msg, " "))
 	case "366":
 		// End of channel name list
 		// :asimov.freenode.net 366 gwebirc #gwebirc :End of /NAMES list.
@@ -114,6 +114,6 @@ func handle_mode(c *Connection, cmd *Event) {
 		}
 	} else {
 		// User
-		c.user.Set_mode(cmd.Args[1])
+		c.user.Set_mode(cmd.Msg)
 	}
 }
