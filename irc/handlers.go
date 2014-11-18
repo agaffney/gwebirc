@@ -10,7 +10,7 @@ type HandlerFunc func(*Connection, *Event)
 
 func (c *Connection) setup_handlers() {
 	c.Add_handler("PING", func(c *Connection, e *Event) {
-		c.Send("PONG :" + e.Args[0])
+		c.Send("PONG :" + e.Msg)
 	})
 
 	c.Add_handler("JOIN", handle_join)
@@ -45,12 +45,32 @@ func (c *Connection) handle_event(e *Event) {
 			fn(c, e)
 		}
 	}
+	//fmt.Println(e)
+	// Now that we've handled it, let's throw it in the correct event queue
+	if e.Source_nick == "" {
+		// This is a server message
+		c.Channels[0].Add_event(e)
+	} else {
+		target := e.Args[0]
+		if target[0] == '#' {
+			// This looks like it was targetted at a channel
+			ch := c.Get_channel(e.Args[0])
+			ch.Add_event(e)
+		} else {
+			// This looks like it was targetted at us directly
+			ch := c.Get_channel(e.Source_nick)
+			if ch == nil {
+				c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_USER, Name: e.Source_nick, conn: c})
+			}
+			ch.Add_event(e)
+		}
+	}
 }
 
 func handle_join(c *Connection, cmd *Event) {
 	if cmd.Source_nick == c.Nick {
 		// Create structure for newly joined channel
-		c.Channels = append(c.Channels, &Channel{Name: cmd.Args[0], conn: c})
+		c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_CHANNEL, Name: cmd.Args[0], conn: c})
 		// We want to know the current mode of the channel
 		c.Send(fmt.Sprintf("MODE :%s\r\n", cmd.Args[0]))
 	} else {
@@ -107,6 +127,7 @@ func handle_mode(c *Connection, cmd *Event) {
 		ch := c.Get_channel(cmd.Args[0])
 		if len(cmd.Args) == 3 {
 			// Mode on user in channel
+			// Refresh the names list in case someone got voice/op
 			ch.Refresh_names()
 		} else if len(cmd.Args) == 2 {
 			// Channel mode

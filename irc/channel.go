@@ -4,13 +4,31 @@ import (
 	"fmt"
 )
 
+const (
+	CH_TYPE_SERVER uint8 = iota
+	CH_TYPE_CHANNEL
+	CH_TYPE_USER
+)
+
+// String representations of the above types
+var CH_TYPES []string = []string{"server", "channel", "user"}
+
 type Channel struct {
+	Type      uint8    `json:"type"`
 	Name      string   `json:"name"`
 	Timestamp uint64   `json:"timestamp"`
 	Mode      string   `json:"mode"`
 	Names     []string `json:"names"`
 	conn      *Connection
 	new_names []string
+	events    []*Event
+}
+
+func (ch *Channel) Add_event(e *Event) {
+	if ch.events == nil {
+		ch.events = make([]*Event, 0)
+	}
+	ch.events = append(ch.events, e)
 }
 
 func (ch *Channel) Set_mode(mode string) {

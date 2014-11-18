@@ -6,12 +6,12 @@ import (
 )
 
 type Event struct {
-	Raw         string
-	Source      string
-	Source_nick string
-	Code        string
-	Args        []string
-	Msg         string
+	Raw         string   `json:"-"`
+	Source      string   `json:"source"`
+	Source_nick string   `json:"source_nick"`
+	Code        string   `json:"code"`
+	Args        []string `json:"args"`
+	Msg         string   `json:"msg"`
 }
 
 func (e *Event) parse() {
