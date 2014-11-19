@@ -8,11 +8,9 @@ import (
 	"os"
 )
 
-var conf *config.Config
-var irc_conns = []*irc.Connection{}
-
 func Start() {
-	conf = &config.Config{}
+	conns := []*irc.Connection{}
+	conf := &config.Config{}
 	conf.Parse_command_line()
 	err := conf.Parse_config_file()
 	if err != nil {
@@ -21,10 +19,11 @@ func Start() {
 	}
 	//conf.Write_config_file()
 	// Setup our HTTP server
-	w := &web.Web{Conf: conf, Conns: irc_conns}
+	w := &web.Web{Conf: conf, Conns: conns}
 	w.Start()
 	// Start our IRC connections
-	irc_start()
+	i := irc.Irc{Conf: conf, Conns: conns}
+	i.Start()
 	// Block indefinitely
 	select {}
 }
