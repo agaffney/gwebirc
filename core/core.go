@@ -3,12 +3,13 @@ package core
 import (
 	"fmt"
 	"github.com/agaffney/gwebirc/config"
-	"net/http"
+	"github.com/agaffney/gwebirc/irc"
+	"github.com/agaffney/gwebirc/web"
 	"os"
 )
 
 var conf *config.Config
-var irc_conns = []*IrcConnection{}
+var irc_conns = []*irc.Connection{}
 
 func Start() {
 	conf = &config.Config{}
@@ -20,11 +21,8 @@ func Start() {
 	}
 	//conf.Write_config_file()
 	// Setup our HTTP server
-	if conf.Http.Enable_webui {
-		http.Handle("/webui/", http.StripPrefix("/webui/", http.FileServer(http.Dir("./webui"))))
-	}
-	http.HandleFunc("/api/", api_handler)
-	go http.ListenAndServe(fmt.Sprintf(":%d", conf.Http.Port), nil)
+	w := &web.Web{Conf: conf, Conns: irc_conns}
+	w.Start()
 	// Start our IRC connections
 	irc_start()
 	// Block indefinitely
