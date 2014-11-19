@@ -2,7 +2,6 @@ package config
 
 import (
 	"fmt"
-	"github.com/agaffney/gwebirc/util"
 )
 
 type Config struct {
@@ -28,6 +27,6 @@ type IRCConnection struct {
 }
 
 func default_config_file() string {
-	default_config_file := fmt.Sprintf("%s/.gwebirc", util.Get_homedir())
+	default_config_file := fmt.Sprintf("%s/.gwebirc", Get_homedir())
 	return default_config_file
 }

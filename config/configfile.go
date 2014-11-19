@@ -3,14 +3,13 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/agaffney/gwebirc/util"
 	"io/ioutil"
 )
 
 func (c *Config) init() {
 	c.Connections = make([]IRCConnection, 0)
 	// Set some sane defaults for an empty config
-	c.config_file = fmt.Sprintf("%s/.gwebirc", util.Get_homedir())
+	c.config_file = fmt.Sprintf("%s/.gwebirc", Get_homedir())
 	c.Http.Port = 9002
 }
 
