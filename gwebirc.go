@@ -20,7 +20,7 @@ func main() {
 	// Start our IRC connections
 	i := &irc.IrcManager{Conf: conf}
 	i.Start()
-	// Setup our HTTP server
+	// Start our HTTP server
 	w := &web.WebManager{Conf: conf, Irc: i}
 	w.Start()
 	// Block indefinitely

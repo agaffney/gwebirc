@@ -11,27 +11,27 @@ var handlers = map[string]func(*WebManager, http.ResponseWriter, *http.Request, 
 	"connections": handle_connections,
 }
 
-func api_handler(w *WebManager, wr http.ResponseWriter, r *http.Request) {
+func api_handler(wm *WebManager, w http.ResponseWriter, r *http.Request) {
 	url := strings.TrimPrefix(r.URL.Path, "/api/")
 	url_parts := strings.Split(url, "/")
 	if fn, ok := handlers[url_parts[0]]; ok {
-		fn(w, wr, r, url_parts)
+		fn(wm, w, r, url_parts)
 	} else {
 		// Return a 404
-		http.NotFound(wr, r)
+		http.NotFound(w, r)
 	}
 }
 
-func handle_connections(w *WebManager, wr http.ResponseWriter, r *http.Request, params []string) {
-	j := json.NewEncoder(wr)
+func handle_connections(wm *WebManager, w http.ResponseWriter, r *http.Request, params []string) {
+	j := json.NewEncoder(w)
 	switch len(params) {
 	case 1:
 		// List connections
-		j.Encode(w.Irc.Conns)
+		j.Encode(wm.Irc.Conns)
 	case 2:
 		// List specific connection by name
 		found_conn := false
-		for _, conn := range w.Irc.Conns {
+		for _, conn := range wm.Irc.Conns {
 			if params[1] == conn.Name {
 				j.Encode(conn)
 				found_conn = true
@@ -39,21 +39,21 @@ func handle_connections(w *WebManager, wr http.ResponseWriter, r *http.Request, 
 			}
 		}
 		if !found_conn {
-			http.NotFound(wr, r)
+			http.NotFound(w, r)
 			return
 		}
 	case 3:
 		fallthrough
 	case 4:
 		var conn *irc.Connection
-		for _, c := range w.Irc.Conns {
+		for _, c := range wm.Irc.Conns {
 			if params[1] == c.Name {
 				conn = c
 				break
 			}
 		}
 		if conn == nil {
-			http.NotFound(wr, r)
+			http.NotFound(w, r)
 			return
 		}
 		switch params[2] {
@@ -66,11 +66,11 @@ func handle_connections(w *WebManager, wr http.ResponseWriter, r *http.Request, 
 			msg := r.PostFormValue("msg")
 			conn.Privmsg(target, msg)
 		default:
-			http.Error(wr, "No such method '"+params[2]+"' for connection", 400)
+			http.Error(w, "No such method '"+params[2]+"' for connection", 400)
 			return
 		}
 	default:
-		http.NotFound(wr, r)
+		http.NotFound(w, r)
 		return
 	}
 }
