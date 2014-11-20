@@ -2,15 +2,15 @@ package irc
 
 import (
 	"fmt"
-	"github.com/agaffney/gwebirc/config"
+	"github.com/agaffney/gwebirc/core"
 )
 
-type Irc struct {
-	Conf  *config.Config
+type IrcManager struct {
+	Conf  *core.Config
 	Conns []*Connection
 }
 
-func (self *Irc) Start() {
+func (self *IrcManager) Start() {
 	// Start the configured IRC connections
 	for _, conn := range self.Conf.Connections {
 		i := &Connection{Name: conn.Name, Host: conn.Host, Port: conn.Port, Tls: conn.Tls}

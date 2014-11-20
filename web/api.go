@@ -7,11 +7,11 @@ import (
 	"strings"
 )
 
-var handlers = map[string]func(*Web, http.ResponseWriter, *http.Request, []string){
+var handlers = map[string]func(*WebManager, http.ResponseWriter, *http.Request, []string){
 	"connections": handle_connections,
 }
 
-func api_handler(w *Web, wr http.ResponseWriter, r *http.Request) {
+func api_handler(w *WebManager, wr http.ResponseWriter, r *http.Request) {
 	url := strings.TrimPrefix(r.URL.Path, "/api/")
 	url_parts := strings.Split(url, "/")
 	if fn, ok := handlers[url_parts[0]]; ok {
@@ -22,16 +22,16 @@ func api_handler(w *Web, wr http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handle_connections(w *Web, wr http.ResponseWriter, r *http.Request, params []string) {
+func handle_connections(w *WebManager, wr http.ResponseWriter, r *http.Request, params []string) {
 	j := json.NewEncoder(wr)
 	switch len(params) {
 	case 1:
 		// List connections
-		j.Encode(w.Conns)
+		j.Encode(w.Irc.Conns)
 	case 2:
 		// List specific connection by name
 		found_conn := false
-		for _, conn := range w.Conns {
+		for _, conn := range w.Irc.Conns {
 			if params[1] == conn.Name {
 				j.Encode(conn)
 				found_conn = true
@@ -46,7 +46,7 @@ func handle_connections(w *Web, wr http.ResponseWriter, r *http.Request, params 
 		fallthrough
 	case 4:
 		var conn *irc.Connection
-		for _, c := range w.Conns {
+		for _, c := range w.Irc.Conns {
 			if params[1] == c.Name {
 				conn = c
 				break

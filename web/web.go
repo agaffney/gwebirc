@@ -2,17 +2,17 @@ package web
 
 import (
 	"fmt"
-	"github.com/agaffney/gwebirc/config"
+	"github.com/agaffney/gwebirc/core"
 	"github.com/agaffney/gwebirc/irc"
 	"net/http"
 )
 
-type Web struct {
-	Conf  *config.Config
-	Conns []*irc.Connection
+type WebManager struct {
+	Conf *core.Config
+	Irc  *irc.IrcManager
 }
 
-func (w *Web) Start() {
+func (w *WebManager) Start() {
 	if w.Conf.Http.Enable_webui {
 		http.Handle("/webui/", http.StripPrefix("/webui/", http.FileServer(http.Dir("./webui"))))
 	}
