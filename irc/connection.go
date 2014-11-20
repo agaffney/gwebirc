@@ -20,6 +20,7 @@ type Connection struct {
 	readbuf   *bufio.Reader
 	user      User
 	handlers  map[string][]HandlerFunc
+	manager   *IrcManager
 }
 
 func (c *Connection) Init() {

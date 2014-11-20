@@ -45,25 +45,29 @@ func (c *Connection) handle_event(e *Event) {
 			fn(c, e)
 		}
 	}
-	//fmt.Println(e)
-	// Now that we've handled it, let's throw it in the correct event queue
-	if e.Source_nick == "" {
-		// This is a server message
-		c.Channels[0].Add_event(e)
-	} else {
-		target := e.Args[0]
-		if target[0] == '#' {
+	for _, x := range e.Args {
+		if x[0] == '#' {
 			// This looks like it was targetted at a channel
-			ch := c.Get_channel(e.Args[0])
-			ch.Add_event(e)
+			e.Channel = x
+			break
+		}
+	}
+	if e.Channel == "" {
+		if e.Source_nick == "" {
+			// This is a server message
+			e.Channel = c.Channels[0].Name
 		} else {
 			// This looks like it was targetted at us directly
 			ch := c.Get_channel(e.Source_nick)
 			if ch == nil {
 				c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_USER, Name: e.Source_nick, conn: c})
 			}
-			ch.Add_event(e)
+			e.Channel = e.Source_nick
 		}
+	}
+	// Call the event callback, if defined
+	if c.manager.callback != nil {
+		c.manager.callback(e, c)
 	}
 }
 
