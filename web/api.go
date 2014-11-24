@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"github.com/agaffney/gwebirc/irc"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 var handlers = map[string]func(*WebManager, http.ResponseWriter, *http.Request, []string){
 	"connections": handle_connections,
+	"events":      handle_events,
 }
 
 func api_handler(wm *WebManager, w http.ResponseWriter, r *http.Request) {
@@ -20,6 +22,27 @@ func api_handler(wm *WebManager, w http.ResponseWriter, r *http.Request) {
 		// Return a 404
 		http.NotFound(w, r)
 	}
+}
+
+func handle_events(wm *WebManager, w http.ResponseWriter, r *http.Request, params []string) {
+	j := json.NewEncoder(w)
+	var events []*irc.Event
+	switch len(params) {
+	case 1:
+		events = wm.Events
+	case 2:
+		// We can cheat a bit here, since we know the implementation details
+		id, _ := strconv.ParseUint(params[1], 10, 64)
+		if int(id) >= len(wm.Events) {
+			// Implement long polling by waiting on event
+		}
+		// Grab all events starting at the index after the provided event ID
+		events = wm.Events[id:]
+	default:
+		http.Error(w, "Unexpected number of arguments", 400)
+		return
+	}
+	j.Encode(events)
 }
 
 func handle_connections(wm *WebManager, w http.ResponseWriter, r *http.Request, params []string) {

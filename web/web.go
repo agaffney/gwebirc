@@ -8,8 +8,9 @@ import (
 )
 
 type WebManager struct {
-	Conf *core.Config
-	Irc  *irc.IrcManager
+	Conf   *core.Config
+	Irc    *irc.IrcManager
+	Events []*irc.Event
 }
 
 func (wm *WebManager) Start() {
@@ -22,10 +23,13 @@ func (wm *WebManager) Start() {
 	})
 	go http.ListenAndServe(fmt.Sprintf(":%d", wm.Conf.Http.Port), nil)
 	// Add our event handler and start the IRC manager
-	wm.Irc.Set_event_callback(irc_event_callback)
+	wm.Irc.Set_event_callback(func(e *irc.Event, c *irc.Connection) {
+		irc_event_callback(wm, e, c)
+	})
 	wm.Irc.Start()
 }
 
-func irc_event_callback(e *irc.Event, c *irc.Connection) {
+func irc_event_callback(wm *WebManager, e *irc.Event, c *irc.Connection) {
 	fmt.Println(e)
+	wm.Events = append(wm.Events, e)
 }

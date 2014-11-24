@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+var next_event_id uint64 = 1
+
 type Connection struct {
 	conn      net.Conn
 	Name      string     `json:"name"`
@@ -108,7 +110,8 @@ func (c *Connection) read_from_server() {
 	for {
 		line, err := c.readbuf.ReadString('\n')
 		if len(line) > 0 {
-			e := &Event{Raw: line}
+			e := &Event{Id: next_event_id, Raw: line}
+			next_event_id++
 			e.parse()
 			c.handle_event(e)
 		}

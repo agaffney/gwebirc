@@ -65,6 +65,7 @@ func (c *Connection) handle_event(e *Event) {
 			e.Channel = e.Source_nick
 		}
 	}
+	e.Connection = c.Name
 	// Call the event callback, if defined
 	if c.manager.callback != nil {
 		c.manager.callback(e, c)

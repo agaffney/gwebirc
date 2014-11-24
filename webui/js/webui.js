@@ -19,6 +19,12 @@ function test_breadcrumbs() {
 	update_breadcrumbs(data);
 }
 
+function test_events() {
+	$.getJSON('/api/events/80', function(data) {
+		console.log(JSON.stringify(data))
+	});
+}
+
 function update_breadcrumbs(items) {
 	var br = $('.breadcrumb')
 	br.empty()
