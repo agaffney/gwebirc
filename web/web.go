@@ -22,11 +22,14 @@ func (wm *WebManager) Start() {
 		api_handler(wm, w, r)
 	})
 	go http.ListenAndServe(fmt.Sprintf(":%d", wm.Conf.Http.Port), nil)
-	// Add our event handler and start the IRC manager
-	wm.Irc.Set_event_callback(func(e *irc.Event, c *irc.Connection) {
-		irc_event_callback(wm, e, c)
-	})
-	wm.Irc.Start()
+	go wm.event_poller()
+}
+
+func (wm *WebManager) event_poller() {
+	for e := range wm.Irc.Events {
+		fmt.Println(e)
+		wm.Events = append(wm.Events, e)
+	}
 }
 
 func irc_event_callback(wm *WebManager, e *irc.Event, c *irc.Connection) {

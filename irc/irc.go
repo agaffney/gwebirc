@@ -5,15 +5,15 @@ import (
 	"github.com/agaffney/gwebirc/core"
 )
 
-type EventCallback func(*Event, *Connection)
-
 type IrcManager struct {
-	Conf     *core.Config
-	Conns    []*Connection
-	callback EventCallback
+	Conf   *core.Config
+	Conns  []*Connection
+	Events chan *Event
 }
 
 func (im *IrcManager) Start() {
+	// Initialize some things
+	im.Events = make(chan *Event, 100)
 	// Start the configured IRC connections
 	for _, conn := range im.Conf.Connections {
 		i := &Connection{Name: conn.Name, Host: conn.Host, Port: conn.Port, Tls: conn.Tls, manager: im}
@@ -25,10 +25,6 @@ func (im *IrcManager) Start() {
 		i.Add_handler("366", handle_366) // 366 means end of NAMES list
 		go i.Start()
 	}
-}
-
-func (im *IrcManager) Set_event_callback(fn EventCallback) {
-	im.callback = fn
 }
 
 func handle_366(c *Connection, cmd *Event) {

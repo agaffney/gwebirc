@@ -17,11 +17,11 @@ func main() {
 		os.Exit(1)
 	}
 	//conf.Write_config_file()
-	// Create our IRC manager
+	// Create the IRC manager
 	i := &irc.IrcManager{Conf: conf}
+	i.Start()
 	// Create the Web manager
 	w := &web.WebManager{Conf: conf, Irc: i}
-	// Start both the web server and IRC connections
 	w.Start()
 	// Block indefinitely
 	select {}
