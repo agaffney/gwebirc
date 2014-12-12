@@ -110,9 +110,9 @@ func (c *Connection) read_from_server() {
 	for {
 		line, err := c.readbuf.ReadString('\n')
 		if len(line) > 0 {
-			e := &Event{Id: next_event_id, Raw: line}
+			e := parse_event(line)
+			e.Id = next_event_id
 			next_event_id++
-			e.parse()
 			c.handle_event(e)
 		}
 		if err != nil {

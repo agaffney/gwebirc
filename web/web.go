@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"github.com/agaffney/gwebirc/core"
 	"github.com/agaffney/gwebirc/irc"
+	"github.com/agaffney/gwebirc/types"
 	"net/http"
 )
 
 type WebManager struct {
 	Conf   *core.Config
 	Irc    *irc.IrcManager
-	Events []*irc.Event
+	Events []*types.IrcEvent
 }
 
 func (wm *WebManager) Start() {
@@ -32,7 +33,7 @@ func (wm *WebManager) event_poller() {
 	}
 }
 
-func irc_event_callback(wm *WebManager, e *irc.Event, c *irc.Connection) {
+func irc_event_callback(wm *WebManager, e *types.IrcEvent, c *irc.Connection) {
 	fmt.Println(e)
 	wm.Events = append(wm.Events, e)
 }

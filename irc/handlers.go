@@ -2,20 +2,21 @@ package irc
 
 import (
 	"fmt"
+	"github.com/agaffney/gwebirc/types"
 	"strconv"
 	"strings"
 )
 
-type HandlerFunc func(*Connection, *Event)
+type HandlerFunc func(*Connection, *types.IrcEvent)
 
 func (c *Connection) setup_handlers() {
-	c.Add_handler("PING", func(c *Connection, e *Event) {
+	c.Add_handler("PING", func(c *Connection, e *types.IrcEvent) {
 		c.Send("PONG :" + e.Msg)
 	})
 
 	c.Add_handler("JOIN", handle_join)
 
-	c.Add_handler("CTCP_VERSION", func(c *Connection, e *Event) {
+	c.Add_handler("CTCP_VERSION", func(c *Connection, e *types.IrcEvent) {
 		c.CtcpResponse("VERSION", e.Source_nick, "none of your business")
 	})
 
@@ -39,7 +40,7 @@ func (c *Connection) Add_handler(code string, fn HandlerFunc) {
 	c.handlers[code] = append(c.handlers[code], fn)
 }
 
-func (c *Connection) handle_event(e *Event) {
+func (c *Connection) handle_event(e *types.IrcEvent) {
 	if handlers, ok := c.handlers[e.Code]; ok {
 		for _, fn := range handlers {
 			fn(c, e)
@@ -70,7 +71,7 @@ func (c *Connection) handle_event(e *Event) {
 	c.manager.Events <- e
 }
 
-func handle_join(c *Connection, cmd *Event) {
+func handle_join(c *Connection, cmd *types.IrcEvent) {
 	if cmd.Source_nick == c.Nick {
 		// Create structure for newly joined channel
 		c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_CHANNEL, Name: cmd.Args[0], conn: c})
@@ -84,7 +85,7 @@ func handle_join(c *Connection, cmd *Event) {
 	}
 }
 
-func handle_part(c *Connection, cmd *Event) {
+func handle_part(c *Connection, cmd *types.IrcEvent) {
 	if cmd.Source_nick != c.Nick {
 		// Somebody left a channel, so refresh the names
 		ch := c.Get_channel(cmd.Args[0])
@@ -100,7 +101,7 @@ func handle_part(c *Connection, cmd *Event) {
 	}
 }
 
-func handle_channel_info(c *Connection, cmd *Event) {
+func handle_channel_info(c *Connection, cmd *types.IrcEvent) {
 	switch cmd.Code {
 	case "324":
 		// Channel mode
@@ -124,7 +125,7 @@ func handle_channel_info(c *Connection, cmd *Event) {
 	}
 }
 
-func handle_mode(c *Connection, cmd *Event) {
+func handle_mode(c *Connection, cmd *types.IrcEvent) {
 	if strings.HasPrefix(cmd.Args[0], "#") {
 		// Channel
 		ch := c.Get_channel(cmd.Args[0])

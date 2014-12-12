@@ -2,23 +2,13 @@ package irc
 
 import (
 	"fmt"
+	"github.com/agaffney/gwebirc/types"
 	"strings"
 )
 
-type Event struct {
-	Id          uint64   `json:"id"`
-	Source      string   `json:"source"`
-	Source_nick string   `json:"source_nick"`
-	Code        string   `json:"code"`
-	Args        []string `json:"args"`
-	Msg         string   `json:"msg"`
-	Connection  string   `json:"connection"`
-	Channel     string   `json:"channel"`
-	Raw         string   `json:"-"`
-}
-
-func (e *Event) parse() {
-	line := strings.TrimRight(e.Raw, " \r\n")
+func parse_event(raw string) *types.IrcEvent {
+	e := &types.IrcEvent{Raw: raw}
+	line := strings.TrimRight(raw, " \r\n")
 	// The event includes a source if it begins with a colon
 	if line[0] == ':' {
 		idx := strings.Index(line, " ")
@@ -52,4 +42,5 @@ func (e *Event) parse() {
 			e.Msg = ctcp_args[1]
 		}
 	}
+	return e
 }
