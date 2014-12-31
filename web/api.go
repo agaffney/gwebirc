@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/agaffney/gwebirc/irc"
 	"github.com/agaffney/gwebirc/types"
 	"net/http"
@@ -27,7 +28,7 @@ func api_handler(wm *WebManager, w http.ResponseWriter, r *http.Request) {
 
 func handle_events(wm *WebManager, w http.ResponseWriter, r *http.Request, params []string) {
 	j := json.NewEncoder(w)
-	var events []*types.IrcEvent
+	var events []*types.Event
 	switch len(params) {
 	case 1:
 		events = wm.Events
@@ -43,7 +44,10 @@ func handle_events(wm *WebManager, w http.ResponseWriter, r *http.Request, param
 		http.Error(w, "Unexpected number of arguments", 400)
 		return
 	}
-	j.Encode(events)
+	err := j.Encode(events)
+	if err != nil {
+		fmt.Printf("JSON error: %s", err)
+	}
 }
 
 func handle_connections(wm *WebManager, w http.ResponseWriter, r *http.Request, params []string) {

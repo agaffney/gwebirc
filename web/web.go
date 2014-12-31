@@ -11,7 +11,7 @@ import (
 type WebManager struct {
 	Conf   *core.Config
 	Irc    *irc.IrcManager
-	Events []*types.IrcEvent
+	Events []*types.Event
 }
 
 func (wm *WebManager) Start() {
@@ -27,13 +27,9 @@ func (wm *WebManager) Start() {
 }
 
 func (wm *WebManager) event_poller() {
+	// Read events from channel infinitely
 	for e := range wm.Irc.Events {
 		fmt.Println(e)
 		wm.Events = append(wm.Events, e)
 	}
-}
-
-func irc_event_callback(wm *WebManager, e *types.IrcEvent, c *irc.Connection) {
-	fmt.Println(e)
-	wm.Events = append(wm.Events, e)
 }

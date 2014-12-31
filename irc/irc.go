@@ -9,12 +9,12 @@ import (
 type IrcManager struct {
 	Conf   *core.Config
 	Conns  []*Connection
-	Events chan *types.IrcEvent
+	Events chan *types.Event
 }
 
 func (im *IrcManager) Start() {
 	// Initialize some things
-	im.Events = make(chan *types.IrcEvent, 100)
+	im.Events = make(chan *types.Event, 100)
 	// Start the configured IRC connections
 	for _, conn := range im.Conf.Connections {
 		i := &Connection{Name: conn.Name, Host: conn.Host, Port: conn.Port, Tls: conn.Tls, manager: im}
@@ -28,7 +28,7 @@ func (im *IrcManager) Start() {
 	}
 }
 
-func handle_366(c *Connection, cmd *types.IrcEvent) {
+func handle_366(c *Connection, cmd *types.Event) {
 	channel := cmd.Args[1]
 	fmt.Printf("Names list for %s:\n", channel)
 	for _, name := range c.Get_channel(channel).Names {
@@ -36,6 +36,6 @@ func handle_366(c *Connection, cmd *types.IrcEvent) {
 	}
 }
 
-func handle_msg(c *Connection, cmd *types.IrcEvent) {
+func handle_msg(c *Connection, cmd *types.Event) {
 
 }

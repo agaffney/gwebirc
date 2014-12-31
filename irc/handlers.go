@@ -7,17 +7,17 @@ import (
 	"strings"
 )
 
-type HandlerFunc func(*Connection, *types.IrcEvent)
+type HandlerFunc func(*Connection, *types.Event)
 
 func (c *Connection) setup_handlers() {
-	c.Add_handler("PING", func(c *Connection, e *types.IrcEvent) {
-		c.Send("PONG :" + e.Msg)
+	c.Add_handler("PING", func(c *Connection, e *types.Event) {
+		c.Send("PONG :" + e.Attribs["msg"])
 	})
 
 	c.Add_handler("JOIN", handle_join)
 
-	c.Add_handler("CTCP_VERSION", func(c *Connection, e *types.IrcEvent) {
-		c.CtcpResponse("VERSION", e.Source_nick, "none of your business")
+	c.Add_handler("CTCP_VERSION", func(c *Connection, e *types.Event) {
+		c.CtcpResponse("VERSION", e.Attribs["source_nick"], "none of your business")
 	})
 
 	c.Add_handler("MODE", handle_mode)
@@ -40,8 +40,8 @@ func (c *Connection) Add_handler(code string, fn HandlerFunc) {
 	c.handlers[code] = append(c.handlers[code], fn)
 }
 
-func (c *Connection) handle_event(e *types.IrcEvent) {
-	if handlers, ok := c.handlers[e.Code]; ok {
+func (c *Connection) handle_event(e *types.Event) {
+	if handlers, ok := c.handlers[e.Attribs["code"]]; ok {
 		for _, fn := range handlers {
 			fn(c, e)
 		}
@@ -49,30 +49,30 @@ func (c *Connection) handle_event(e *types.IrcEvent) {
 	for _, x := range e.Args {
 		if x[0] == '#' {
 			// This looks like it was targetted at a channel
-			e.Channel = x
+			e.Attribs["channel"] = x
 			break
 		}
 	}
-	if e.Channel == "" {
-		if e.Source_nick == "" {
+	if e.Attribs["channel"] == "" {
+		if e.Attribs["source_nick"] == "" {
 			// This is a server message
-			e.Channel = c.Channels[0].Name
+			e.Attribs["channel"] = c.Channels[0].Name
 		} else {
 			// This looks like it was targetted at us directly
-			ch := c.Get_channel(e.Source_nick)
+			ch := c.Get_channel(e.Attribs["source_nick"])
 			if ch == nil {
-				c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_USER, Name: e.Source_nick, conn: c})
+				c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_USER, Name: e.Attribs["source_nick"], conn: c})
 			}
-			e.Channel = e.Source_nick
+			e.Attribs["channel"] = e.Attribs["source_nick"]
 		}
 	}
-	e.Connection = c.Name
+	e.Attribs["connection"] = c.Name
 	// Send the event over the channel
 	c.manager.Events <- e
 }
 
-func handle_join(c *Connection, cmd *types.IrcEvent) {
-	if cmd.Source_nick == c.Nick {
+func handle_join(c *Connection, cmd *types.Event) {
+	if cmd.Attribs["source_nick"] == c.Nick {
 		// Create structure for newly joined channel
 		c.Channels = append(c.Channels, &Channel{Type: CH_TYPE_CHANNEL, Name: cmd.Args[0], conn: c})
 		// We want to know the current mode of the channel
@@ -85,8 +85,8 @@ func handle_join(c *Connection, cmd *types.IrcEvent) {
 	}
 }
 
-func handle_part(c *Connection, cmd *types.IrcEvent) {
-	if cmd.Source_nick != c.Nick {
+func handle_part(c *Connection, cmd *types.Event) {
+	if cmd.Attribs["source_nick"] != c.Nick {
 		// Somebody left a channel, so refresh the names
 		ch := c.Get_channel(cmd.Args[0])
 		ch.Refresh_names()
@@ -101,8 +101,8 @@ func handle_part(c *Connection, cmd *types.IrcEvent) {
 	}
 }
 
-func handle_channel_info(c *Connection, cmd *types.IrcEvent) {
-	switch cmd.Code {
+func handle_channel_info(c *Connection, cmd *types.Event) {
+	switch cmd.Attribs["code"] {
 	case "324":
 		// Channel mode
 		ch := c.Get_channel(cmd.Args[1])
@@ -116,7 +116,7 @@ func handle_channel_info(c *Connection, cmd *types.IrcEvent) {
 		// Channel name list
 		// :asimov.freenode.net 353 gwebirc @ #gwebirc :gwebirc @agaffney
 		ch := c.Get_channel(cmd.Args[2])
-		ch.Add_names(strings.Split(cmd.Msg, " "))
+		ch.Add_names(strings.Split(cmd.Attribs["msg"], " "))
 	case "366":
 		// End of channel name list
 		// :asimov.freenode.net 366 gwebirc #gwebirc :End of /NAMES list.
@@ -125,7 +125,7 @@ func handle_channel_info(c *Connection, cmd *types.IrcEvent) {
 	}
 }
 
-func handle_mode(c *Connection, cmd *types.IrcEvent) {
+func handle_mode(c *Connection, cmd *types.Event) {
 	if strings.HasPrefix(cmd.Args[0], "#") {
 		// Channel
 		ch := c.Get_channel(cmd.Args[0])
@@ -139,6 +139,6 @@ func handle_mode(c *Connection, cmd *types.IrcEvent) {
 		}
 	} else {
 		// User
-		c.user.Set_mode(cmd.Msg)
+		c.user.Set_mode(cmd.Attribs["msg"])
 	}
 }
